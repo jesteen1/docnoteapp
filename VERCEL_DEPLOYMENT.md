@@ -36,4 +36,15 @@ The following environment variables must be configured in your Vercel project se
 ## Troubleshooting
 
 -   **Build Errors**: Check the build logs in the Vercel dashboard.
--   **Database Connection**: Ensure your MongoDB cluster allows connections from Vercel (allow access from anywhere `0.0.0.0/0` or whitelist Vercel IP addresses).
+-   **Database Connection**: Ensure your MongoDB cluster allows connections from Vercel.
+
+### Allow Access from Vercel (MongoDB Atlas)
+
+Vercel uses dynamic IP addresses, so you must allow access from anywhere.
+
+1.  Log in to your [MongoDB Atlas Dashboard](https://cloud.mongodb.com/).
+2.  In the left sidebar, under **Security**, click **Network Access**.
+3.  Click the green **+ Add IP Address** button.
+4.  Click **Allow Access From Anywhere** (or enter `0.0.0.0/0`).
+5.  Click **Confirm**.
+6.  Wait for the status to change from "Pending" to "Active".
