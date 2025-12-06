@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Download } from 'lucide-react';
 import Link from 'next/link';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function DocumentViewer() {
     const params = useParams();
@@ -27,8 +28,9 @@ export default function DocumentViewer() {
         }
     }, [params?.id]);
 
+
     if (loading) {
-        return <div className="flex justify-center items-center min-h-[50vh]">Loading...</div>;
+        return <LoadingSpinner fullScreen />;
     }
 
     if (!fileUrl) {

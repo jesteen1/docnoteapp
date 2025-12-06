@@ -10,6 +10,10 @@ const DocumentSchema = new Schema({
         ref: 'Subject',
         required: true,
     },
+    lessonId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Lesson',
+    },
     fileData: {
         type: Buffer,
         required: true,

@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Trash2, Plus, Folder } from 'lucide-react';
+import { Trash2, Plus, Folder, Edit2, X, Save } from 'lucide-react';
 import Modal from '@/components/Modal';
 import Toast from '@/components/Toast';
 import FormattedDate from '@/components/FormattedDate';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface Subject {
     _id: string;
@@ -26,13 +27,16 @@ export default function DashboardPage() {
     const [newSubjectDesc, setNewSubjectDesc] = useState('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [subjectToDelete, setSubjectToDelete] = useState<string | null>(null);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+    const [editName, setEditName] = useState('');
+    const [editDesc, setEditDesc] = useState('');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
             router.push('/auth/signin');
         } else if (status === 'authenticated') {
-            // Optional: Check for admin role here if not handled by middleware/layout
             fetchSubjects();
         }
     }, [status, router]);
@@ -113,12 +117,50 @@ export default function DashboardPage() {
         }
     };
 
+    const openEditModal = (subject: Subject) => {
+        setEditingSubject(subject);
+        setEditName(subject.name);
+        setEditDesc(subject.description || '');
+        setEditModalOpen(true);
+    };
+
+    const handleUpdateSubject = async () => {
+        if (!editingSubject) return;
+
+        const previousSubjects = [...subjects];
+        const optimisticSubject = { ...editingSubject, name: editName, description: editDesc };
+
+        // Optimistic update
+        setSubjects(subjects.map(sub => sub._id === editingSubject._id ? optimisticSubject : sub));
+        setEditModalOpen(false);
+        setEditingSubject(null);
+
+        try {
+            const res = await fetch(`/api/subjects/${editingSubject._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: editName, description: editDesc }),
+            });
+
+            if (res.ok) {
+                // Determine if we need to update with server response (e.g. for sanitized fields)
+                // For now, assume optimistic is correct or server returns same structure
+                // Ideally, we might want to sync with server response if it changes things
+                const serverSubject = await res.json();
+                setSubjects(current => current.map(sub => sub._id === serverSubject._id ? serverSubject : sub));
+                setToast({ message: 'Subject updated', type: 'success' });
+            } else {
+                throw new Error('Failed to update');
+            }
+        } catch (error) {
+            setSubjects(previousSubjects);
+            setToast({ message: 'Error updating subject', type: 'error' });
+        }
+    };
+
+
     if (status === 'loading' || loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            </div>
-        );
+        return <LoadingSpinner fullScreen />;
     }
 
     return (
@@ -187,6 +229,16 @@ export default function DashboardPage() {
                         >
                             <Trash2 size={20} />
                         </button>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                openEditModal(subject);
+                            }}
+                            className="absolute top-4 right-14 text-gray-400 hover:text-indigo-600 transition-colors z-10 p-2 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            title="Edit Subject"
+                        >
+                            <Edit2 size={20} />
+                        </button>
                     </div>
                 ))}
             </div>
@@ -221,6 +273,49 @@ export default function DashboardPage() {
                             onClick={handleDeleteSubject}
                         >
                             Delete
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={editModalOpen}
+                onClose={() => setEditModalOpen(false)}
+                title="Edit Subject"
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Subject Name</label>
+                        <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <input
+                            type="text"
+                            value={editDesc}
+                            onChange={(e) => setEditDesc(e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm"
+                            onClick={() => setEditModalOpen(false)}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:text-sm"
+                            onClick={handleUpdateSubject}
+                        >
+                            Save Changes
                         </button>
                     </div>
                 </div>

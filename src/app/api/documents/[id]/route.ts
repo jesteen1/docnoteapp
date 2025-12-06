@@ -1,8 +1,38 @@
 import { NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]/route'; // Correct import path used previously
 import dbConnect from '@/lib/db';
 import Document from '@/models/Document';
-import { getServerSession } from 'next-auth';
+
+export const dynamic = 'force-dynamic';
+
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const session = await getServerSession(authOptions);
+    if (!session || (session.user as any).role !== 'admin') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await dbConnect();
+    try {
+        const { id } = await params;
+        const { title } = await req.json();
+
+        const updatedDoc = await Document.findByIdAndUpdate(
+            id,
+            { title },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedDoc) {
+            return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+        }
+
+        return NextResponse.json(updatedDoc);
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to update document' }, { status: 500 });
+    }
+}
+
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     await dbConnect();
@@ -28,6 +58,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             headers.set('Content-Disposition', `inline; filename="${document.fileName}"`);
         }
 
+        // Cache for 1 year, immutable as ID is unique to content version
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+
         return new NextResponse(document.fileData, {
             status: 200,
             headers,
@@ -38,7 +71,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session || (session.user as any).role !== 'admin') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -52,3 +85,4 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         return NextResponse.json({ error: 'Failed to delete document' }, { status: 500 });
     }
 }
+

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FileText, ArrowLeft, Download } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import FormattedDate from '@/components/FormattedDate';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface Document {
     _id: string;
@@ -42,8 +43,9 @@ export default function SubjectPage() {
         }
     }, [params?.id]);
 
+
     if (loading) {
-        return <div className="flex justify-center items-center min-h-[50vh]">Loading...</div>;
+        return <LoadingSpinner fullScreen />;
     }
 
     if (!subject) {
@@ -56,15 +58,15 @@ export default function SubjectPage() {
                 <Link href="/" className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 mb-4">
                     <ArrowLeft size={16} /> Back to Subjects
                 </Link>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{subject.name}</h1>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                    <div className="min-w-0">
+                        <h1 className="text-3xl font-bold text-gray-900 break-words">{subject.name}</h1>
                         {subject.description && <p className="mt-2 text-gray-600">{subject.description}</p>}
                     </div>
                     {documents.length > 0 && (
                         <a
                             href={`/api/subjects/${subject._id}/download`}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shrink-0"
                         >
                             <Download size={16} className="mr-2" />
                             Download All
@@ -83,15 +85,16 @@ export default function SubjectPage() {
                                         <div className="flex-shrink-0">
                                             <FileText className="h-6 w-6 text-gray-400" />
                                         </div>
-                                        <div className="ml-4 truncate">
-                                            <div className="flex text-sm">
-                                                <p className="font-medium text-indigo-600 truncate">{doc.title}</p>
-                                                <p className="ml-1 flex-shrink-0 font-normal text-gray-500">
-                                                    - {doc.fileName}
+                                        <div className="ml-4 flex-1 min-w-0">
+                                            <div className="flex flex-col sm:flex-row sm:items-baseline">
+                                                <p className="font-medium text-indigo-600 break-words text-sm sm:text-base">{doc.title}</p>
+                                                <span className="hidden sm:inline mx-1 text-gray-500">-</span>
+                                                <p className="font-normal text-gray-500 text-xs sm:text-sm truncate">
+                                                    {doc.fileName}
                                                 </p>
                                             </div>
-                                            <div className="mt-2 flex">
-                                                <div className="flex items-center text-sm text-gray-500">
+                                            <div className="mt-1 flex">
+                                                <div className="flex items-center text-xs sm:text-sm text-gray-500">
                                                     <p>
                                                         Uploaded on <FormattedDate date={doc.createdAt} />
                                                     </p>

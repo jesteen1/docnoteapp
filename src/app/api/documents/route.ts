@@ -17,9 +17,10 @@ export async function POST(req: Request) {
         const file = formData.get('file') as File;
         const title = formData.get('title') as string;
         const subjectId = formData.get('subjectId') as string;
+        const lessonId = formData.get('lessonId') as string | null;
 
-        if (!file || !title || !subjectId) {
-            return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+        if (!file || !title || !subjectId || !lessonId) {
+            return NextResponse.json({ error: 'Missing fields: file, title, subjectId, and lessonId are required' }, { status: 400 });
         }
 
         const arrayBuffer = await file.arrayBuffer();
@@ -27,13 +28,16 @@ export async function POST(req: Request) {
         // Create a copy to ensure it's a safe Buffer for MongoDB driver
         const safeBuffer = Buffer.from(buffer);
 
-        const document = await Document.create({
+        const documentData: any = {
             title,
             subjectId,
+            lessonId,
             fileData: safeBuffer,
             fileType: file.type,
             fileName: file.name,
-        });
+        };
+
+        const document = await Document.create(documentData);
 
         return NextResponse.json({ message: 'Document uploaded', documentId: document._id }, { status: 201 });
     } catch (error) {

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Folder } from 'lucide-react';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface Subject {
   _id: string;
@@ -28,8 +29,9 @@ export default function Home() {
       });
   }, []);
 
+
   if (loading) {
-    return <div className="flex justify-center items-center min-h-[50vh]">Loading...</div>;
+    return <LoadingSpinner fullScreen />;
   }
 
   return (

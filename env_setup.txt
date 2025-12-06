@@ -1,0 +1,20 @@
+# ------------------------------------------------------------------------------
+# RENAME THIS FILE TO: .env
+# ------------------------------------------------------------------------------
+# IMPORTANT: This file is IGNORED by Git.
+# It will NOT be uploaded to Vercel.
+# You MUST add these variables in the Vercel Dashboard manually.
+# ------------------------------------------------------------------------------
+
+# Database Connection
+MONGODB_URI="mongodb+srv://willam:joseharrywillam123@cluster0.qr7oqoo.mongodb.net/noteapp?appName=Cluster0"
+
+# NextAuth Configuration
+NEXTAUTH_SECRET="a339d20bbf8797b498354ffd08ad0e12670261b5380d383abe89bfeb5c779b81"
+
+# URL Configuration
+# For Local Development:
+NEXTAUTH_URL="http://localhost:3000"
+
+# For Vercel (You must set this in Vercel Dashboard, not here):
+# NEXTAUTH_URL="https://your-project-name.vercel.app"
