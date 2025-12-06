@@ -15,16 +15,25 @@ interface Document {
     createdAt: string;
 }
 
+
 interface Subject {
     _id: string;
     name: string;
     description: string;
 }
 
+interface Lesson {
+    _id: string;
+    title: string;
+    description?: string;
+    createdAt: string;
+}
+
 export default function SubjectPage() {
     const params = useParams();
     const [subject, setSubject] = useState<Subject | null>(null);
     const [documents, setDocuments] = useState<Document[]>([]);
+    const [lessons, setLessons] = useState<Lesson[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -34,6 +43,7 @@ export default function SubjectPage() {
                 .then((data) => {
                     setSubject(data.subject);
                     setDocuments(data.documents);
+                    setLessons(data.lessons || []);
                     setLoading(false);
                 })
                 .catch((err) => {
@@ -75,59 +85,33 @@ export default function SubjectPage() {
                 </div>
             </div>
 
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-                <ul className="divide-y divide-gray-200">
-                    {documents.map((doc) => (
-                        <li key={doc._id}>
-                            <div className="px-4 py-4 flex items-center sm:px-6 hover:bg-gray-50 transition duration-150 ease-in-out">
-                                <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
-                                    <div className="flex items-center">
-                                        <div className="flex-shrink-0">
-                                            <FileText className="h-6 w-6 text-gray-400" />
-                                        </div>
-                                        <div className="ml-4 flex-1 min-w-0">
-                                            <div className="flex flex-col sm:flex-row sm:items-baseline">
-                                                <p className="font-medium text-indigo-600 break-words text-sm sm:text-base">{doc.title}</p>
-                                                <span className="hidden sm:inline mx-1 text-gray-500">-</span>
-                                                <p className="font-normal text-gray-500 text-xs sm:text-sm truncate">
-                                                    {doc.fileName}
-                                                </p>
+            {/* Lessons Section */}
+            {lessons.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Lessons</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {lessons.map((lesson) => (
+                            <Link href={`/lesson/${lesson._id}`} key={lesson._id} className="block">
+                                <div className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-300 border border-gray-100">
+                                    <div className="p-6">
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
+                                                <FileText className="h-6 w-6 text-indigo-600" />
                                             </div>
-                                            <div className="mt-1 flex">
-                                                <div className="flex items-center text-xs sm:text-sm text-gray-500">
-                                                    <p>
-                                                        Uploaded on <FormattedDate date={doc.createdAt} />
-                                                    </p>
-                                                </div>
+                                            <div className="ml-4 flex-1 min-w-0">
+                                                <h3 className="text-lg font-medium text-gray-900 truncate">{lesson.title}</h3>
+                                                {lesson.description && <p className="text-sm text-gray-500 truncate">{lesson.description}</p>}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="ml-5 flex-shrink-0 flex gap-2">
-                                    <Link
-                                        href={`/document/${doc._id}`}
-                                        className="px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo active:bg-indigo-700 transition ease-in-out duration-150"
-                                    >
-                                        View
-                                    </Link>
-                                    <a
-                                        href={`/api/documents/${doc._id}?download=true`}
-                                        download={doc.fileName}
-                                        className="px-3 py-1 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:text-gray-800 active:bg-gray-50 transition ease-in-out duration-150 flex items-center"
-                                    >
-                                        <Download size={16} />
-                                    </a>
-                                </div>
-                            </div>
-                        </li>
-                    ))}
-                    {documents.length === 0 && (
-                        <li className="px-4 py-8 text-center text-gray-500">
-                            No documents available in this subject.
-                        </li>
-                    )}
-                </ul>
-            </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+
         </div>
     );
 }

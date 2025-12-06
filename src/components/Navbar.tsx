@@ -29,7 +29,7 @@ export default function Navbar() {
                         )}
                         {session ? (
                             <button
-                                onClick={() => signOut()}
+                                onClick={() => signOut({ callbackUrl: '/' })}
                                 className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
                             >
                                 <LogOut size={18} /> Logout
@@ -64,7 +64,7 @@ export default function Navbar() {
                         )}
                         {session ? (
                             <button
-                                onClick={() => signOut()}
+                                onClick={() => signOut({ callbackUrl: '/' })}
                                 className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
                             >
                                 Logout
